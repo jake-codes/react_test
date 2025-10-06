@@ -1,175 +1,191 @@
-render() {
-  const { items = [], loading, error, selectedCategory = "All", dense = false } = this.state;
-
-  // dynamic categories
-  const categories = Array.from(new Set(items.map(it => (it.category || "").trim()).filter(Boolean))).sort();
-
-  const filtered =
-    selectedCategory === "All" ? items :
-    items.filter(it => (it.category || "").toLowerCase() === selectedCategory.toLowerCase());
-
-  return (
-    <div
+<main
+  style={{
+    flex: 1,
+    minWidth: 0,
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",   // header + scroller
+    background: "#fff"         // change to "#F0F7FF" if you want a blue panel
+  }}
+>
+  {/* fixed header inside main */}
+  <div
+    style={{
+      position: "sticky",
+      top: 0,
+      zIndex: 2,
+      background: "#F8FAFD",   // or match page bg
+      padding: "12px 18px 8px",
+      borderBottom: "1px solid #e5e7eb"
+    }}
+  >
+    <h1
       style={{
-        height: "100vh",
-        display: "flex",
-        background: "linear-gradient(180deg,#F8FAFD 0%, #F1F6FF 100%)",
-        fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial"
+        fontSize: 32,
+        letterSpacing: 0.5,
+        fontWeight: 800,
+        color: "#29B5E8",
+        margin: "0 0 6px 0"
       }}
     >
-      {/* Sidebar (icons; sticks to top) */}
-      <aside
-        style={{
-          width: 220,
-          flexShrink: 0,
-          position: "sticky",
-          top: 0,
-          alignSelf: "flex-start",
-          height: "100vh",
-          overflowY: "auto",
-          borderRight: "1px solid #e5e7eb",
-          background: "#fff",
-          padding: "16px 12px"
-        }}
-      >
-        <div style={{ fontWeight: 800, marginBottom: 10, color: "#027AFF" }}>Categories</div>
+      Snowflake PS App Catalog
+    </h1>
 
-        {/* All first */}
-        <div
-          onClick={() => this.setState({ selectedCategory: "All" })}
+    <div style={{ color: "#6b7280", display: "flex", justifyContent: "space-between" }}>
+      <span>Click any card to view full details.</span>
+      <span style={{ fontSize: 13 }}>
+        View:&nbsp;
+        <button
+          onClick={() => this.setState({ dense: false })}
           style={{
-            padding: "8px 10px",
-            borderRadius: 10,
+            border: "none",
+            background: "transparent",
+            color: !this.state.dense ? "#027AFF" : "#94a3b8",
+            fontWeight: !this.state.dense ? 700 : 400,
             cursor: "pointer",
-            background: selectedCategory === "All" ? "#E8F3FF" : "transparent",
-            color: selectedCategory === "All" ? "#027AFF" : "#333",
-            marginBottom: 6,
-            display: "flex",
-            alignItems: "center",
-            gap: 8
+            marginRight: 6
           }}
         >
-          <span style={{ width: 8, height: 8, borderRadius: 99, background: "#027AFF" }} />
-          All
-        </div>
-
-        {/* Dynamic categories with your icon/color meta (from CATEGORY_META) */}
-        {categories.map((cat) => {
-          const meta = getCatMeta(cat); // you already have this helper
-          const active = selectedCategory === cat;
-          return (
-            <div
-              key={cat}
-              onClick={() => this.setState({ selectedCategory: cat })}
-              style={{
-                padding: "8px 10px",
-                borderRadius: 10,
-                cursor: "pointer",
-                background: active ? meta.light : "transparent",
-                color: active ? meta.color : "#1f2937",
-                marginBottom: 6,
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                fontWeight: active ? 700 : 600
-              }}
-            >
-              <span style={{ width: 8, height: 8, borderRadius: 99, background: meta.color }} />
-              <span style={{ fontSize: 16 }}>{meta.icon}</span>
-              <span style={{ lineHeight: 1 }}>{cat}</span>
-            </div>
-          );
-        })}
-      </aside>
-
-      {/* Main column (ONLY this scrolls) */}
-      <main
-        style={{
-          flex: 1,
-          minWidth: 0,
-          height: "100vh",
-          overflowY: "auto",
-          padding: "16px 18px"
-        }}
-      >
-        {/* Title is in main, not over sidebar */}
-        <h1
+          3-wide
+        </button>
+        <button
+          onClick={() => this.setState({ dense: true })}
           style={{
-            fontSize: 32,
-            letterSpacing: 0.5,
-            fontWeight: 800,
-            color: "#29B5E8",
-            margin: "0 0 8px 0",
-            borderBottom: "3px solid #E8F3FF",
-            paddingBottom: 6
+            border: "none",
+            background: "transparent",
+            color: this.state.dense ? "#027AFF" : "#94a3b8",
+            fontWeight: this.state.dense ? 700 : 400,
+            cursor: "pointer"
           }}
         >
-          Snowflake PS App Catalog
-        </h1>
-
-        <div style={{ color: "#6b7280", margin: "6px 0 14px" }}>
-          Click any card to view full details.
-          <span style={{ float: "right", fontSize: 13 }}>
-            View:&nbsp;
-            <button
-              onClick={() => this.setState({ dense: false })}
-              style={{
-                border: "none",
-                background: "transparent",
-                color: !dense ? "#027AFF" : "#94a3b8",
-                fontWeight: !dense ? 700 : 400,
-                cursor: "pointer",
-                marginRight: 6
-              }}
-            >
-              3-wide
-            </button>
-            <button
-              onClick={() => this.setState({ dense: true })}
-              style={{
-                border: "none",
-                background: "transparent",
-                color: dense ? "#027AFF" : "#94a3b8",
-                fontWeight: dense ? 700 : 400,
-                cursor: "pointer"
-              }}
-            >
-              1-wide
-            </button>
-          </span>
-        </div>
-
-        {loading && <div>Loading…</div>}
-        {error && !loading && <div style={{ color: "crimson", marginBottom: 12 }}>{error}</div>}
-
-        {/* GRID: fix “smooshing” by stretching rows and cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: dense
-              ? "repeat(1, 1fr)"
-              : "repeat(auto-fill, minmax(320px, 1fr))",
-            gap: 16,
-            alignItems: "stretch"           // ensure equal-height lanes
-          }}
-        >
-          {filtered.map((it) => this.renderCard(it))}
-        </div>
-      </main>
+          1-wide
+        </button>
+      </span>
     </div>
-  );
-}
+  </div>
+
+  {/* grid scroller */}
+  <div
+    style={{
+      flex: 1,
+      minHeight: 0,
+      overflowY: "auto",
+      padding: "12px 18px 20px"
+    }}
+  >
+    {this.state.loading && <div>Loading…</div>}
+    {this.state.error && !this.state.loading && (
+      <div style={{ color: "crimson", marginBottom: 12 }}>{this.state.error}</div>
+    )}
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: this.state.dense
+          ? "repeat(1, 1fr)"
+          : "repeat(auto-fill, minmax(320px, 1fr))",
+        gap: 16,
+        alignItems: "stretch",          // 🔧 stop “smooshing”
+        gridAutoRows: "1fr"             // 🔧 consistent row height
+      }}
+    >
+      {filtered.map((it) => this.renderCard(it))}
+    </div>
+  </div>
+</main>
 
 
------
 
 
-.markdown-body h1 { color: #29B5E8; margin: 6px 0 6px; }
-.markdown-body h2 { color: #11567F; margin: 6px 0 4px; }
-.markdown-body h3 { color: #5B85B5; margin: 4px 0 2px; }
+---
 
-.markdown-body p, .markdown-body ul, .markdown-body ol, .markdown-body li {
-  margin-top: 4px;
-  margin-bottom: 4px;
-}
-.markdown-body ul, .markdown-body ol { padding-left: 18px; }
+
+// 3-wide
+return (
+  <div
+    key={it.id || it.__file}
+    style={{
+      ...base,
+      padding: 12,
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+      height: "100%",                    // 🔧 lets it stretch within gridAutoRows:1fr
+      boxSizing: "border-box"
+    }}
+    onClick={() => this.openModal(it)}    // keep onClick here
+  >
+    <div style={titleStyle}>{title}</div>
+    {img ? (
+      <img
+        src={img}
+        alt={title}
+        style={{ width: "100%", height: 140, objectFit: "cover", background: "#f3f6fb", borderRadius: 8 }}
+      />
+    ) : null}
+    <div style={{ color: "#475569", fontSize: 14, lineHeight: 1.35 }}>
+      {this.truncate(desc, 120)}
+    </div>
+
+    {this.renderChip(it)}                 {/* marginTop:'auto' inside renderChip */}
+  </div>
+);
+
+
+
+---
+
+
+
+// overlay
+const overlay = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,.55)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "flex-start",
+  padding: 24,
+  zIndex: 9999,          // 🔧 was 1000; raise above sticky headers
+};
+
+// ...
+return (
+  <div
+    style={overlay}
+    onClick={() => this.closeModal()}    // clicking outside closes
+    onKeyDown={(e) => { if (e.key === "Escape") this.closeModal(); }}
+  >
+    <div
+      style={dialog}
+      onClick={(e) => e.stopPropagation()}   // 🔧 prevent overlay from closing immediately
+      role="dialog"
+      aria-modal="true"
+    >
+      {/* …rest unchanged… */}
+    </div>
+  </div>
+);
+
+
+
+
+
+---
+
+
+<aside style={{
+  width: 220,
+  flexShrink: 0,
+  position: "sticky",
+  top: 0,
+  alignSelf: "flex-start",
+  height: "100vh",
+  overflowY: "auto",
+  background: "#0F3E5C",     // 🔵 Snowflake-y deep blue
+  color: "#fff",
+  padding: "16px 12px",
+  boxShadow: "inset -1px 0 0 rgba(255,255,255,.08)"
+}}>
+  {/* …category items… use white/blue/orange text like before */}
+</aside>
